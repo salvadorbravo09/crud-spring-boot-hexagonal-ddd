@@ -12,6 +12,10 @@ import com.sbravoc.productshexagonal.infrastructure.mapper.ProductMapper;
 import com.sbravoc.productshexagonal.infrastructure.web.request.CreateProductRequest;
 import com.sbravoc.productshexagonal.infrastructure.web.request.UpdateProductRequest;
 import com.sbravoc.productshexagonal.infrastructure.web.response.ProductResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -26,6 +30,7 @@ import java.util.NoSuchElementException;
  */
 @RestController
 @RequestMapping("/api/v1/products")
+@Tag(name = "Productos", description = "Operaciones relacionadas con la gestion de productos")
 public class ProductRestController {
 
     private final CreateProductUseCase createProductUseCase;
@@ -50,6 +55,11 @@ public class ProductRestController {
         this.commandMapper = commandMapper;
     }
 
+    @Operation(summary = "Crear un nuevo producto", description = "Crea un producto en la base de datos y retorna la información creada.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Producto creado exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos")
+    })
     @PostMapping
     public ResponseEntity<ProductResponse> createProduct(@RequestBody CreateProductRequest request) {
         CreateProductCommand command = commandMapper.toCommand(request);
@@ -64,12 +74,21 @@ public class ProductRestController {
         return ResponseEntity.created(location).body(productMapper.toResponse(createdProduct));
     }
 
+    @Operation(summary = "Obtener todos los productos", description = "Retorna una lista de todos los productos disponibles en la base de datos.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de productos obtenida exitosamente")
+    })
     @GetMapping
     public ResponseEntity<List<ProductResponse>> getAllProducts() {
         List<Product> products = getProductUseCase.findAll();
         return ResponseEntity.ok(productMapper.toResponseList(products));
     }
 
+    @Operation(summary = "Obtener un producto por ID", description = "Busca un producto específico. Usa caché si está disponible.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Producto encontrado"),
+            @ApiResponse(responseCode = "404", description = "Producto no encontrado")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id) {
         Product product = getProductUseCase.findById(id)
@@ -78,6 +97,12 @@ public class ProductRestController {
         return ResponseEntity.ok(productMapper.toResponse(product));
     }
 
+    @Operation(summary = "Actualizar un producto existente", description = "Actualiza los detalles de un producto existente en la base de datos.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Producto actualizado exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
+            @ApiResponse(responseCode = "404", description = "Producto no encontrado")
+    })
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponse> updateProduct(
             @PathVariable Long id,
@@ -87,6 +112,11 @@ public class ProductRestController {
         return ResponseEntity.ok(productMapper.toResponse(updatedProduct));
     }
 
+    @Operation(summary = "Eliminar un producto", description = "Elimina un producto específico de la base de datos.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "404", description = "Producto no encontrado"),
+            @ApiResponse(responseCode = "204", description = "Producto eliminado exitosamente")
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         deleteProductUseCase.execute(id);
