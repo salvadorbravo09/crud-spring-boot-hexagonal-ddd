@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  # SERVICIO 1: La base de datos (PostgresSQL)
+  postgres-db:
+    image: postgres:15-alpine
+    container_name: hexagonal-db
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=products_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Persistencia: Guardar los datos aunque se apague el contenedor
+    networks:
+      - hexagonal-network
+
+  # SERVICIO 2: La aplicación Spring Boot
+  app:
+    build: . # Construye usando el Dockerfile del directorio actual
+    container_name: hexagonal-api
+    depends_on:
+      - postgres-db # Espera a que la base de datos este lista antes de iniciar la aplicación
+    ports:
+      - "8080:8080" # Expone el puerto 8080 para acceder a la API
+    environment:
+      # Configuración de conexión a la base de datos
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/products_db
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update # Crear/Actualizar el esquema de la base de datos automáticamente
+      - SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.PostgreSQLDialect # Usar el dialecto de PostgresSQL
+    networks:
+      - hexagonal-network
+    restart: on-failure # Si la app falla (ej. la base de datos no estaba lista) intenta reiniciarla
+
+volumes:
+  postgres_data: # Volumen para persistencia de datos de Postgres
+
+networks:
+  hexagonal-network: # Red privada interna
