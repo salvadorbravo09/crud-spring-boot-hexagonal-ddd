@@ -1,5 +1,7 @@
 package com.sbravoc.productshexagonal.infrastructure.web.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -8,9 +10,17 @@ import java.time.LocalDateTime;
  * Pertenece a la capa de infraestructura (adaptador web)
  */
 public class ProductResponse {
+
+    @Schema(description = "ID del producto", example = "1")
     private Long id;
+
+    @Schema(description = "Nombre del producto", example = "Laptop Gamer")
     private String name;
+
+    @Schema(description = "Precio del producto", example = "1299.99")
     private BigDecimal price;
+
+    @Schema(description = "Fecha y hora de creación del producto", example = "2024-06-15T10:15:30")
     private LocalDateTime createdAt;
 
     public ProductResponse() {
