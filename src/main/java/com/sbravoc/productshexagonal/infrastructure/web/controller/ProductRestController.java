@@ -18,6 +18,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * Adaptador de entrada REST
@@ -71,10 +72,10 @@ public class ProductRestController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id) {
-        return getProductUseCase.findById(id)
-                .map(product -> productMapper.toResponse(product))
-                .map(productResponse -> ResponseEntity.ok(productResponse))
-                .orElse(ResponseEntity.notFound().build());
+        Product product = getProductUseCase.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Producto con ID " + id + " no encontrado"));
+
+        return ResponseEntity.ok(productMapper.toResponse(product));
     }
 
     @PutMapping("/{id}")
