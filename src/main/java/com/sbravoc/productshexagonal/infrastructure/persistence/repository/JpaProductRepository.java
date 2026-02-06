@@ -31,7 +31,8 @@ public class JpaProductRepository implements ProductRepositoryPort {
     @Override
     // Al guardar, actualizamos la caché con el nuevo producto usando su ID como clave
     // Usamos #result.id porque si es un CREATE, el ID viene en el resultado, no en input
-    @CachePut(value = "products", key = "#result.id", condition = "#result != null")
+    // unless -> Cachea el resultado A MENOS que el resultado sea nulo
+    @CachePut(value = "products", key = "#result.id", unless = "#result == null")
     public Product save(Product product) {
         ProductEntity entity = entityMapper.toEntity(product);
         ProductEntity savedEntity = springDataRepository.save(entity);
