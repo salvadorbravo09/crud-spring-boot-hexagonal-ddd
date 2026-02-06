@@ -1,5 +1,7 @@
 package com.sbravoc.productshexagonal.infrastructure.web.request;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.math.BigDecimal;
 
 /**
@@ -7,7 +9,11 @@ import java.math.BigDecimal;
  * Pertenece a la capa de infraestructura (adaptador web)
  */
 public class CreateProductRequest {
+
+    @Schema(description = "Nombre del producto", example = "Laptop Gamer", requiredMode = Schema.RequiredMode.REQUIRED)
     private String name;
+
+    @Schema(description = "Precio del producto", example = "1299.99", requiredMode = Schema.RequiredMode.REQUIRED)
     private BigDecimal price;
 
     public CreateProductRequest() {
