@@ -3,10 +3,14 @@ package com.sbravoc.productshexagonal.infrastructure.web.exception;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 /**
@@ -55,6 +59,20 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now()
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        log.warn("Se recibieron datos inválidos en la petición: {}", ex.getBindingResult().getTarget());
+        Map<String, String> errors = new HashMap<>();
+
+        // Recorremos todos los errores y los guardamos en un mapa: Campo -> Mensaje de error
+        ex.getBindingResult().getAllErrors().forEach((error) -> {
+            String fieldName = ((FieldError) error).getField(); // Hace un cast a FieldError para obtener el nombre del campo que falló la validación
+            String errorMessage = error.getDefaultMessage(); // Extrae el mensaje de error definido en la anotación de validación (DTO)
+            errors.put(fieldName, errorMessage); // Lo guarda en el mapa limpio
+        });
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 
     public static class ErrorResponse {
